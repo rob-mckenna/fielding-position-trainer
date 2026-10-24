@@ -365,9 +365,8 @@ function ground(sit,F){
 }
 function outfield(sit,O){
  var b=new Builder(sit),S=SITS[sit];
- var target={none:'2',r1:'3',r12:'H',loaded:'H',r3:'H'}[sit];
  var cutMan=(O==='RF'||O==='RCF')?'2B':'SS',other=(cutMan==='SS')?'2B':'SS';
- var direct=(target==='2');
+ var direct=(sit==='none');
  var mv={};mv[O]=OFSP[O];b.role(O,'Fields the ball','field');
  var OB={LF:{LCF:[150,150]},LCF:{LF:[180,120],RCF:[300,112]},RCF:{RF:[420,120],LCF:[300,112]},RF:{RCF:[440,150]}}[O];
  for(var k in OB){b.role(k,'Backs up the outfielder','backup');mv[k]=OB[k];}
@@ -375,7 +374,7 @@ function outfield(sit,O){
   b.role(cutMan,'Covers second base','cover','2');mv[cutMan]=COV['2'];
   bk2(b,mv,O);
  }else{
-  b.role(cutMan,'Is the cutoff: stands in line between the outfielder and the base','cutoff');mv[cutMan]=CUT[O];
+  b.role(cutMan,'Is the cutoff: lines up between the outfielder and second base, then throws to second','cutoff');mv[cutMan]=CUT[O];
   b.role(other,'Covers second base','cover','2');mv[other]=COV['2'];
  }
  b.role('3B','Covers third base','cover','3');mv['3B']=COV['3'];
@@ -388,17 +387,14 @@ function outfield(sit,O){
  if(S.run.indexOf(3)>=0)d.R3=RB.H;
  fillAll(b,mv,O);
  b.dest=d;
- var tgtTxt={'2':'second base (the batter may try for two)','3':'third base (the runner from first is heading there)','H':'home plate (the lead runner is trying to score)'}[target];
- b.push('Ball hit to '+PN[O]+'! '+PN[O]+' calls "Mine!" Everyone moves. We throw to the base where the lead runner is going: '+tgtTxt+'.',{pos:mv,ball:OFSP[O],runners:b.partial(0.5),hl:b.hlKeys().concat([O])});
- var recv=(target==='2')?cutMan:(target==='3'?'3B':'C');
+ b.push('Ball hit to '+PN[O]+'! '+PN[O]+' calls "Mine!" Everyone moves. '+(direct?'Throw straight to second base.':'Throw to the cutoff, who relays to second base.'),{pos:mv,ball:OFSP[O],runners:b.partial(0.5),hl:b.hlKeys().concat([O])});
  if(direct){
   b.push(PN[O]+' throws straight to the '+lc(PN[cutMan])+' at second base. The center fielders back up the throw.',{ball:COV['2'],throwL:[OFSP[O],COV['2']],runners:b.finalRunners([]),hl:[O,cutMan]});
  }else{
   b.push(PN[O]+' throws to the cutoff, the '+lc(PN[cutMan])+'.',{ball:CUT[O],throwL:[OFSP[O],CUT[O]],hl:[O,cutMan]});
-  var rp=(target==='3')?COV['3']:COV.H;
-  b.push('The cutoff turns and throws to the '+lc(PN[recv])+' at '+BN[target]+'.',{ball:rp,throwL:[CUT[O],rp],runners:b.finalRunners([]),hl:[cutMan,recv]});
+  b.push('The cutoff turns and throws to the '+lc(PN[other])+' at second base.',{ball:COV['2'],throwL:[CUT[O],COV['2']],runners:b.finalRunners([]),hl:[cutMan,other]});
  }
- var tip='Throw to the base where the lead runner is going. The cutoff stands in line, hands up, and listens: "Cut!" or "Let it go!" The other outfielders always back up.';
+ var tip='Get the ball back to second base. With runners on base, use the cutoff to relay the throw to the infielder covering second. The cutoff stands in line with second base, hands up. The other outfielders always back up.';
  b.push('Remember: '+tip,{hl:[]});
  return b.finish(HITS['o'+O],tip);
 }
@@ -489,8 +485,8 @@ var POS={
 P:{home:'In the pitching circle.',you:'Field balls hit to you and throw to the right base. Call "Mine!" first. Stay in the circle.',not:[['Any play where the ball is not hit to you','Stay in the circle. Watch the play and be ready to catch the ball.'],['Passed ball','Stay in the circle. The catcher throws you the ball.'],['Steal','Stay in the circle. Let the throw go by.'],['Bunt','Stay in the circle. Let the infielders field it.']],backs:'No one. You stay in the circle.',covers:'No base',call:'"Mine!" and "Ball!"',tip:'When you have the ball in the circle, the play is over and runners must stop.'},
 C:{home:'Behind home plate.',you:'If a bunt stops in front of the plate, call "Mine!", field it, and throw to the sure out.',not:[['Ground ball to an infielder','Move up in front of home plate. Cover it and be ready for a throw.'],['Bunt','Come out and call where to throw: "First!" "Second!"'],['Force play at home or runner on 3rd','Cover home plate and stay on it.'],['Hit to the outfield','Cover home plate and take the throw.'],['Steal','Catch the pitch and throw to the covering base.'],['Passed ball','Chase the ball and throw it to the pitcher in the circle.']],backs:'No one. You stay by the plate.',covers:'Home plate',call:'"First!" "Second!" "Third!" "Home!"',tip:'You face the whole field. You are the voice of the defense.'},
 '1B':{home:'A few steps in front of first base.',you:'Step on first for the out. If a runner is on first, throw to second first, then run back to first.',not:[['Ground ball to another infielder','Run to first base and give a big target.'],['Hit to the outfield','Cover first base.'],['Bunt down the 3rd-base line','Charge toward home plate, ready to help.'],['Bunt down the 1st-base line','Field it and throw to the 2nd baseman covering first.'],['Steal or passed ball','Stay near first base.']],backs:'No one. The right fielder backs YOU up.',covers:'First base',call:'"Mine!" and "Bag!"',tip:'Find the bag with your foot and stretch toward the throw.'},
-'2B':{home:'Between first and second, on the first-base side.',you:'Throw to first, or to the shortstop covering second if there is a force.',not:[['Hit to left or left center, runner on base','Cover second base. The shortstop is the cutoff.'],['Hit to right center or right field','Be the cutoff. With no runners, catch the throw at second.'],['Bunt','Cover first base.'],['Runner on 1st, grounder to shortstop or third base','Cover second base.']],backs:'First base on some throws',covers:'Second base or first base (bunts)',call:'"Mine!" "Cut!" "Got it!"',tip:'Hands up and stay in line as the cutoff.'},
-SS:{home:'Between second and third, on the third-base side.',you:'Throw to first, or to the 2nd baseman covering second if there is a force.',not:[['Runner on 1st, grounder to P, 1B or 2B','Cover second base.'],['Grounder to third base','Back up the third baseman. Stay behind her.'],['Hit to left or left center','Be the cutoff. With no runners, catch the throw at second.'],['Hit to right center or right field','Cover second base.'],['Bunt down the 3rd-base line','Cover third base. With a runner on first, cover second.'],['Bunt down the 1st-base line','Cover second base.'],['Steal','Cover second and take the throw.']],backs:'Second base and third base',covers:'Second or third base',call:'"Mine!" "Cut!" "Two!"',tip:'You have the most ground to cover. Read the play before the pitch.'},
+'2B':{home:'Between first and second, on the first-base side.',you:'Throw to first, or to the shortstop covering second if there is a force.',not:[['Hit to left or left center, runner on base','Cover second base. The shortstop is the cutoff.'],['Hit to right center or right field','Be the cutoff and relay to the shortstop at second base. With no runners, catch the throw at second.'],['Bunt','Cover first base.'],['Runner on 1st, grounder to shortstop or third base','Cover second base.']],backs:'First base on some throws',covers:'Second base or first base (bunts)',call:'"Mine!" "Cut!" "Got it!"',tip:'Hands up and stay in line with second base as the cutoff.'},
+SS:{home:'Between second and third, on the third-base side.',you:'Throw to first, or to the 2nd baseman covering second if there is a force.',not:[['Runner on 1st, grounder to P, 1B or 2B','Cover second base.'],['Grounder to third base','Back up the third baseman. Stay behind her.'],['Hit to left or left center','Be the cutoff and relay to the 2nd baseman at second base. With no runners, catch the throw at second.'],['Hit to right center or right field','Cover second base.'],['Bunt down the 3rd-base line','Cover third base. With a runner on first, cover second.'],['Bunt down the 1st-base line','Cover second base.'],['Steal','Cover second and take the throw.']],backs:'Second base and third base',covers:'Second or third base',call:'"Mine!" "Cut!" "Two!"',tip:'You have the most ground to cover. Read the play before the pitch.'},
 '3B':{home:'Near third base, a few steps in front of the bag.',you:'Throw to first, or step on third if there is a force. Charge bunts.',not:[['Ground ball to any other fielder','Go to third base and cover the bag.'],['Runners on 1st and 2nd, grounder to pitcher or shortstop','Cover third for the force.'],['Hit to the outfield','Cover third base.'],['Bunt down the 1st-base line','Cover third base.'],['Steal','Cover third base.'],['Passed ball','Stay at third base.']],backs:'No one. The left fielder backs YOU up.',covers:'Third base',call:'"Mine!" "Home!" "Back!"',tip:'Stay low and keep your glove down. The ball comes fast.'},
 LF:{home:'Left side of the outfield grass.',you:'Call "Mine!", catch it, and throw to the cutoff.',not:[['Ground ball or bunt to the infield','Run in and back up third base.'],['Hit to left center field','Back up the left center fielder.'],['Throw going to third base','Back up third base.'],['Bunt','Back up third base.'],['Hit to the right side','Move toward the middle, ready to help.']],backs:'Left center field and third base',covers:'No base',call:'"Mine!" "Cut!"',tip:'Run on every pitch. The ball finds the outfield fast.'},
 LCF:{home:'Left-center, deep behind the shortstop.',you:'Call "Mine!" You and the right center fielder have priority over the corner outfielders. Throw to the cutoff.',not:[['Ground ball to the infield','Run in and back up second base.'],['Hit to left field','Back up the left fielder. Stay behind her.'],['Hit to right center field','Back up the right center fielder.'],['Throw going to second base','Back up second base.'],['Bunt or steal','Back up second base.']],backs:'Left field, right center field and second base',covers:'No base',call:'"Mine!" "I got it!"',tip:'Balls in the gap: the player with the best angle calls it loud and early.'},
