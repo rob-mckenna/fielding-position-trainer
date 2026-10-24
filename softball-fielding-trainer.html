@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Know Your Spot - 10U Softball Fielding Trainer</title>
+<style>
+:root{--ink:#12263a;--muted:#4a5b6c;--bg:#f3f6f9;--card:#fff;--line:#d5dde5;--accent:#1f5fbf;--accent-dark:#15438a;
+--bat:#6b2fa0;--inf:#1f5fbf;--out:#b85400;--grass:#2f7d3a;--dur:.9s}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;color:var(--ink);background:var(--bg);line-height:1.45;font-size:17px}
+header{background:linear-gradient(135deg,#12263a,#1f5fbf);color:#fff;padding:18px 16px 12px}
+header h1{margin:0;font-size:1.7rem;letter-spacing:.3px}
+header p{margin:4px 0 0;opacity:.92}
+.wrap{max-width:1100px;margin:0 auto}
+nav{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}
+nav button{font:inherit;font-weight:700;color:#fff;background:rgba(255,255,255,.14);border:2px solid transparent;border-radius:999px;padding:9px 18px;cursor:pointer;min-height:44px}
+nav button[aria-selected="true"]{background:#fff;color:var(--accent-dark)}
+nav button:focus-visible,button:focus-visible,select:focus-visible,summary:focus-visible{outline:3px solid #ffbf1f;outline-offset:2px}
+main{padding:16px}
+section.tab{display:none}
+section.tab.on{display:block}
+.grid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:16px;align-items:start}
+@media(max-width:820px){.grid{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;box-shadow:0 1px 3px rgba(18,38,58,.08)}
+.card h2,.card h3{margin:.1em 0 .4em}
+h2{font-size:1.25rem}h3{font-size:1.05rem}
+svg.field{width:100%;height:auto;display:block;border-radius:14px;border:1px solid var(--line);background:#2f7d3a}
+.pl{transition:transform var(--dur) ease-in-out;cursor:default}
+.pl circle{stroke:#fff;stroke-width:2.5}
+.pl text{fill:#fff;font-weight:800;font-size:12px;text-anchor:middle;dominant-baseline:central;pointer-events:none}
+.pl.battery circle{fill:var(--bat)}.pl.infield circle{fill:var(--inf)}.pl.outfield circle{fill:var(--out)}
+.pl.hl circle{stroke:#ffe14d;stroke-width:5}
+.pl.sel circle{stroke:#ffe14d;stroke-width:5}
+.pl.click{cursor:pointer}
+.pl.dim{opacity:.55}
+.run{transition:transform var(--dur) ease-in-out}
+.run polygon{fill:#fff;stroke:#c62828;stroke-width:3}
+.run text{font-size:10px;font-weight:800;fill:#c62828;text-anchor:middle;dominant-baseline:central}
+.run.out polygon{fill:#9aa5af;stroke:#4a5560}
+.run.out text{fill:#222}
+.ball{transition:transform var(--dur) ease-in-out}
+.ball circle{fill:#ffe96b;stroke:#7a6a00;stroke-width:1.5}
+.tline{stroke:#fff;stroke-width:4;stroke-dasharray:9 7;opacity:.95}
+.controls{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+.btn{font:inherit;font-weight:700;border:2px solid var(--accent);background:#fff;color:var(--accent-dark);border-radius:10px;padding:8px 14px;cursor:pointer;min-height:44px}
+.btn.primary{background:var(--accent);color:#fff}
+.btn:disabled{opacity:.45;cursor:default}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font:inherit;border:2px solid var(--line);background:#fff;border-radius:999px;padding:7px 12px;cursor:pointer;min-height:40px;color:var(--ink)}
+.chip[aria-pressed="true"]{border-color:var(--accent);background:#e6f0ff;font-weight:700}
+label.lbl{display:block;font-weight:700;margin:10px 0 4px}
+select{font:inherit;padding:9px;border-radius:10px;border:2px solid var(--line);width:100%;min-height:44px;background:#fff;color:var(--ink)}
+ol.steps{margin:8px 0 0;padding-left:0;list-style:none;counter-reset:s}
+ol.steps li{counter-increment:s;padding:8px 10px 8px 40px;position:relative;border-radius:10px;margin-bottom:6px;color:var(--muted);background:#f6f8fa}
+ol.steps li::before{content:counter(s);position:absolute;left:8px;top:7px;width:24px;height:24px;border-radius:50%;background:#cfd8e2;color:#12263a;font-weight:800;text-align:center;line-height:24px;font-size:.85rem}
+ol.steps li.cur{background:#fff7d1;color:var(--ink);font-weight:600;outline:2px solid #e6b800}
+ol.steps li.cur::before{background:#e6b800}
+ol.steps li.done{color:var(--ink)}
+.legend{display:flex;flex-wrap:wrap;gap:10px;font-size:.9rem;margin:8px 0}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.dot{width:14px;height:14px;border-radius:50%;display:inline-block}
+.sq{width:14px;height:14px;transform:rotate(45deg);display:inline-block;background:#fff;border:3px solid #c62828}
+.note{font-size:.92rem;color:var(--muted);background:#eef3f8;border-left:4px solid var(--accent);padding:8px 10px;border-radius:6px;margin:10px 0}
+details{margin-top:10px}summary{cursor:pointer;font-weight:700;color:var(--accent-dark);min-height:32px}
+.poslist{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:6px;margin-bottom:10px}
+.poslist .chip{text-align:left}
+dl.pc{margin:0}dl.pc dt{font-weight:800;margin-top:10px;color:var(--accent-dark)}dl.pc dd{margin:2px 0 0}
+dl.pc ul{margin:4px 0 0;padding-left:20px}
+.remember{background:#fff7d1;border-radius:10px;padding:8px 12px;margin-top:12px;border:1px solid #e6c84d}
+.qbox .q{font-size:1.15rem;font-weight:700;margin:6px 0 12px}
+.opts{display:grid;gap:8px}
+.opt{font:inherit;text-align:left;border:2px solid var(--line);background:#fff;border-radius:12px;padding:12px;cursor:pointer;min-height:48px;color:var(--ink)}
+.opt:hover:not(:disabled){border-color:var(--accent)}
+.opt.right{border-color:#1b8a3a;background:#e4f6e9;font-weight:700}
+.opt.wrong{border-color:#b42318;background:#fdeceb}
+.fb{margin-top:12px;padding:10px 12px;border-radius:10px;background:#eef3f8}
+.score{font-weight:800;color:var(--accent-dark)}
+table.cs{width:100%;border-collapse:collapse;font-size:.9rem;background:#fff}
+table.cs th,table.cs td{border:1px solid var(--line);padding:6px 8px;vertical-align:top;text-align:left}
+table.cs th{background:#12263a;color:#fff}
+table.cs td ul{margin:0;padding-left:16px}
+.tablewrap{overflow-x:auto}
+.rules li{margin-bottom:4px}
+footer{padding:16px;color:var(--muted);font-size:.9rem;text-align:center}
+.printonly{display:none}
+@media print{
+ body{background:#fff;font-size:10.5px}
+ header nav,.noprint,footer,.controls{display:none!important}
+ header{background:none;color:#000;padding:0 0 6px}
+ header p{display:none}
+ section.tab{display:none!important}
+ section#tab-cheat{display:block!important}
+ main{padding:0}
+ table.cs{font-size:9px}
+ table.cs th{background:#ddd!important;color:#000}
+ .card{box-shadow:none;border:none;padding:0}
+}
+@media(prefers-reduced-motion:reduce){.pl,.run,.ball{transition-duration:.01s!important}}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+<h1>Know Your Spot</h1>
+<p>10U softball fielding: where to stand, who to back up, which base to cover.</p>
+<nav role="tablist" aria-label="Sections" id="nav"></nav>
+</div></header>
+<main class="wrap">
+
+<section class="tab on" id="tab-field" aria-label="Field">
+<div class="grid">
+ <div>
+  <svg id="fieldSvg" class="field" viewBox="0 0 600 640" role="img" aria-label="Softball field with ten fielders"></svg>
+  <div class="legend noprint">
+   <span><i class="dot" style="background:#6b2fa0"></i>Battery (P, C)</span>
+   <span><i class="dot" style="background:#1f5fbf"></i>Infield</span>
+   <span><i class="dot" style="background:#b85400"></i>Outfield</span>
+   <span><i class="sq"></i>Runner</span>
+   <span><i class="dot" style="background:#ffe96b;border:2px solid #7a6a00"></i>Ball</span>
+  </div>
+ </div>
+ <div>
+  <div class="card">
+   <h2>Play the play</h2>
+   <label class="lbl">1. Who is on base?</label>
+   <div class="chips" id="sitChips"></div>
+   <label class="lbl" for="hitSel">2. Where does the ball go?</label>
+   <select id="hitSel"></select>
+   <div class="controls">
+    <button class="btn" id="bBack">&#9664; Back</button>
+    <button class="btn primary" id="bPlay">&#9654; Play</button>
+    <button class="btn" id="bStep">Step &#9654;</button>
+    <button class="btn" id="bReplay">&#8634; Replay</button>
+    <button class="btn" id="bSlow" aria-pressed="false">Slow: off</button>
+   </div>
+   <h3 id="playTitle"></h3>
+   <ol class="steps" id="steps" aria-live="polite"></ol>
+  </div>
+  <div class="note">Gold rings show who has a job on this play. Teams and coaches may change some assignments to fit their own playbook. The outfield has four players: left field, left center, right center and right field. The two center fielders have priority on balls in the gaps.</div>
+  <details class="noprint"><summary>Coach / parent tip</summary>
+   <p>Have players pick a situation, guess their job out loud, then press Play to check. Try it with the whole team in a circle: call out a situation and a hit, and each player says what she does. Five minutes before practice goes a long way.</p>
+  </details>
+ </div>
+</div>
+</section>
+
+<section class="tab" id="tab-pos" aria-label="Positions">
+<div class="grid">
+ <div>
+  <svg id="posSvg" class="field" viewBox="0 0 600 640" role="img" aria-label="Tap a player to learn her position"></svg>
+  <p class="note">Tap a player on the field, or pick a position from the list.</p>
+ </div>
+ <div>
+  <div class="poslist" id="posList"></div>
+  <div class="card" id="posCard"></div>
+ </div>
+</div>
+</section>
+
+<section class="tab" id="tab-quiz" aria-label="Quiz">
+<div class="grid">
+ <div class="card qbox">
+  <h2>Quick quiz</h2>
+  <p class="score" id="score">Correct: 0 of 0</p>
+  <div class="q" id="qText"></div>
+  <div class="opts" id="qOpts"></div>
+  <div class="fb" id="qFb" hidden></div>
+  <div class="controls">
+   <button class="btn" id="qShow" hidden>Show on field</button>
+   <button class="btn primary" id="qNext" hidden>Next question &#9654;</button>
+  </div>
+  <p class="note">No timer and no penalties. Wrong answers are how we learn. Your score resets when you close the page.</p>
+ </div>
+ <div class="card">
+  <h3>Big ideas to remember</h3>
+  <ul class="rules" id="rulesQuiz"></ul>
+ </div>
+</div>
+</section>
+
+<section class="tab" id="tab-cheat" aria-label="Cheat Sheet">
+<div class="card">
+ <div class="controls noprint"><button class="btn primary" id="bPrint">Print this page</button></div>
+ <h2>Cheat sheet: every position</h2>
+ <div class="tablewrap"><table class="cs" id="csTable"></table></div>
+ <h3 style="margin-top:14px">Team rules</h3>
+ <ul class="rules" id="rulesCheat"></ul>
+ <p class="note">Assignments follow common fastpitch teaching. Coaches may adjust them for their team.</p>
+</div>
+</section>
+</main>
+<footer>Know Your Spot &middot; 10U softball fielding trainer &middot; Nothing is saved when you close this page.</footer>
+
+<script>
+/* ===== DATA (coaches: edit assignments in the engine and POS below) ===== */
+var KEYS=['P','C','1B','2B','SS','3B','LF','LCF','RCF','RF'];
+var NUM={P:1,C:2,'1B':3,'2B':4,'3B':5,SS:6,LF:7,LCF:8,RCF:9,RF:10};
+var GROUP={P:'battery',C:'battery','1B':'infield','2B':'infield',SS:'infield','3B':'infield',LF:'outfield',LCF:'outfield',RCF:'outfield',RF:'outfield'};
+var PN={P:'Pitcher',C:'Catcher','1B':'1st baseman','2B':'2nd baseman',SS:'Shortstop','3B':'3rd baseman',LF:'Left fielder',LCF:'Left center fielder',RCF:'Right center fielder',RF:'Right fielder'};
+var FULL={P:'Pitcher',C:'Catcher','1B':'First Base','2B':'Second Base',SS:'Shortstop','3B':'Third Base',LF:'Left Field',LCF:'Left Center Field',RCF:'Right Center Field',RF:'Right Field'};
+var BN={'1':'first base','2':'second base','3':'third base',H:'home plate'};
+var HS={P:[300,418],C:[300,540],'1B':[405,372],'2B':[362,310],SS:[238,310],'3B':[195,372],LF:[105,215],LCF:[225,140],RCF:[375,140],RF:[495,215]};
+var BASE={'1':[430,392],'2':[300,262],'3':[170,392],H:[300,520]};
+var COV={'1':[420,390],'2':[300,276],'3':[180,390],H:[300,496]};
+var BK={'1':[492,332],'2':[300,205],'2L':[252,190],'2R':[348,190],'3':[108,332],H:[300,592]};
+var RB={'1':[440,400],'2':[312,254],'3':[160,400],H:[318,528]};
+var BATTER=[262,530];
+var BALLSP={P:[300,418],'1B':[412,352],'2B':[352,326],SS:[248,326],'3B':[200,352]};
+var OFSP={LF:[130,238],LCF:[235,172],RCF:[365,172],RF:[470,238]};
+var CUT={LF:[209,335],LCF:[265,335],RCF:[335,335],RF:[391,335]};
+var SITS={none:{label:'No runners',run:[]},r1:{label:'Runner on 1st',run:[1]},r12:{label:'Runners on 1st and 2nd',run:[1,2]},loaded:{label:'Bases loaded',run:[1,2,3]},r3:{label:'Runner on 3rd',run:[3]}};
+var HITS={gP:'Ground ball to the pitcher',g1B:'Ground ball to first base',g2B:'Ground ball to second base',gSS:'Ground ball to shortstop',g3B:'Ground ball to third base',
+ oLF:'Base hit to left field',oLCF:'Base hit to left center field',oRCF:'Base hit to right center field',oRF:'Base hit to right field',b3:'Bunt down the 3rd-base line',b1:'Bunt down the 1st-base line',st:'Steal of second base',pb:'Passed ball'};
+function validHits(sit){var r=['gP','g1B','g2B','gSS','g3B','oLF','oLCF','oRCF','oRF','b3','b1'];if(sit==='r1')r.push('st');if(sit==='r3'||sit==='loaded')r.push('pb');return r;}
+var WHY={cover:'Somebody has to be at every base where a play could happen.',backup:'If the throw gets away, the backup stops it so runners cannot take extra bases.',cutoff:'The cutoff shortens the throw and can send it to a different base.',charge:'Moving toward the ball on a bunt gives us the best chance for the out.',chase:'The catcher must get the loose ball fast.',call:'The catcher sees the whole field and tells everyone where to throw.',field:'The player closest to the ball fields it.'};
+
+/* ===== ENGINE ===== */
+function lc(x){return x.charAt(0).toLowerCase()+x.slice(1);}
+function lerp(a,b,t){return [a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t];}
+function copyPos(o){var n={};for(var k in o)n[k]=o[k];return n;}
+function Builder(sit){
+ var S=SITS[sit];this.sit=sit;this.states=[];this.roles={};
+ this.start={};this.dest={};
+ this.start.B=BATTER;
+ var self=this;
+ S.run.forEach(function(b){self.start['R'+b]=RB[String(b)];});
+ this.cur={pos:copyPos(HS),ball:HS.P,runners:{},throwL:null,hl:[],text:''};
+ for(var id in this.start){this.cur.runners[id]={p:this.start[id],out:false};}
+}
+Builder.prototype.role=function(k,text,kind,base){this.roles[k]={text:text,kind:kind,base:base||null};};
+Builder.prototype.push=function(text,patch){
+ patch=patch||{};var c=this.cur;
+ if(patch.pos)for(var k in patch.pos)c.pos[k]=patch.pos[k];
+ if(patch.ball)c.ball=patch.ball;
+ if(patch.runners)for(var r in patch.runners){var o=patch.runners[r];if(o.p)c.runners[r].p=o.p;if(o.out!==undefined)c.runners[r].out=o.out;}
+ c.throwL=patch.throwL||null;c.hl=patch.hl||[];c.text=text;
+ var snap={pos:copyPos(c.pos),ball:c.ball,throwL:c.throwL,hl:c.hl.slice(),text:text,runners:{}};
+ for(var id in c.runners)snap.runners[id]={p:c.runners[id].p,out:c.runners[id].out};
+ this.states.push(snap);
+};
+var BP=[BASE.H,BASE['1'],BASE['2'],BASE['3'],BASE.H];
+var STARTIDX={B:0,R1:1,R2:2,R3:3};
+function nearIdx(p,from){var bi=-1,bd=1e9;for(var i=Math.max(1,from+1);i<=4;i++){var d=Math.hypot(p[0]-BP[i][0],p[1]-BP[i][1]);if(d<bd){bd=d;bi=i;}}return bi;}
+Builder.prototype.partial=function(t){
+ var o={};
+ for(var id in this.dest){
+  var si=STARTIDX[id],di=nearIdx(this.dest[id],si);
+  var wp=(di>si+1)?BP[si+1]:null; /* run along the base path: stop at the next base first */
+  o[id]={p:wp?[wp[0]+(this.dest[id][0]-BP[di][0])*0.0,wp[1]]:lerp(this.start[id],this.dest[id],t)};
+  if(wp)o[id].p=off(wp,id);
+ }
+ return o;
+};
+Builder.prototype.finalRunners=function(outIds){var o={};for(var id in this.dest){o[id]={p:this.dest[id],out:outIds.indexOf(id)>=0};}return o;};
+Builder.prototype.hlKeys=function(){var a=[];for(var k in this.roles){if(this.roles[k].kind!=='stay')a.push(k);}return a;};
+Builder.prototype.finish=function(title,tip){
+ var self=this;
+ KEYS.forEach(function(k){if(!self.roles[k])self.role(k,'Stays ready at home spot and watches the play','stay');});
+ return {title:title,states:this.states,roles:this.roles,tip:tip};
+};
+function sitHint(sit){
+ return {none:'Nobody is on base. The only play is the batter.',r1:'Runner on first: she MUST run, so there is a force play at second.',r12:'Runners on first and second: force plays at second and third.',loaded:'Bases loaded: force plays at every base, including home.',r3:'Runner on third: she is not forced to run on a ground ball.'}[sit];
+}
+function fillAll(b,mv,F){
+ var left=(F==='3B'||F==='SS'||F==='LF'||F==='LCF');
+ var secCovered=false;
+ for(var k in b.roles){if(b.roles[k].kind==='cover'&&b.roles[k].base==='2')secCovered=true;}
+ var D={};
+ D.C=['Moves up in front of home plate, ready for a throw','cover','H',COV.H];
+ D['1B']=['Covers first base','cover','1',COV['1']];
+ D['3B']=['Covers third base','cover','3',COV['3']];
+ var secKey=null;
+ if(!secCovered)secKey=left?'2B':'SS';
+ if(F==='2B')secKey='SS';
+ if(F==='SS')secKey='2B';
+ ['2B','SS'].forEach(function(k){
+  if(k===secKey&&!secCovered)D[k]=['Covers second base','cover','2',COV['2']];
+  else if(k==='SS'&&F==='3B')D[k]=['Backs up the third baseman','backup','3',[182,322]];
+  else D[k]=['Moves in behind second base to back up the throw','backup','2',(k==='2B')?[345,288]:[255,288]];
+ });
+ D.P=['Stays in the circle. When she has the ball in the circle, the play is over.','stay',null,HS.P];
+ D.LF=['Backs up third base','backup','3',BK['3']];
+ D.LCF=['Backs up second base','backup','2',BK['2L']];
+ D.RCF=['Backs up second base','backup','2',BK['2R']];
+ D.RF=['Backs up first base','backup','1',BK['1']];
+ KEYS.forEach(function(k){
+  if(!b.roles[k]){var d=D[k];b.role(k,d[0],d[1],d[2]);mv[k]=d[3];}
+  else if(!mv[k]&&b.roles[k].kind!=='field'){mv[k]=D[k][3];}
+  if(k==='P'&&F==='P')mv.P=HS.P;
+ });
+}
+function runnerDestGround(b){
+ var d={B:BASE['1']};
+ if(b.start.R1)d.R1=BASE['2'];if(b.start.R2)d.R2=BASE['3'];if(b.start.R3)d.R3=RB.H;
+ var o={};for(var id in d){o[id]=(id==='B'||id==='R1'||id==='R2')?off(d[id],id):d[id];}
+ return o;
+}
+function off(p,id){return id==='B'?[p[0]+10,p[1]+12]:id==='R1'?[p[0]+10,p[1]+8]:id==='R2'?[p[0]+12,p[1]-8]:[p[0]-12,p[1]+8];}
+function bk2(b,mv,excl){
+ ['LCF','RCF'].forEach(function(k){if(k===excl||b.roles[k])return;b.role(k,'Backs up second base','backup','2');mv[k]=(k==='LCF')?BK['2L']:BK['2R'];});
+}
+function coverFor(base,F){
+ if(base==='1')return '1B';
+ if(base==='2')return (F==='SS'||F==='3B')?'2B':'SS';
+ if(base==='3')return '3B';
+ return 'C';
+}
+function runnerAtBase(b,base){
+ // which runner heads to this base on a force play
+ var map={'1':'B','2':'R1','3':'R2',H:'R3'};var id=map[base];return b.dest[id]?id:null;
+}
+function ground(sit,F){
+ var b=new Builder(sit),S=SITS[sit];
+ var chain;
+ if(sit==='none'||sit==='r3')chain=['1'];
+ else if(sit==='r1')chain=['2','1'];
+ else if(sit==='loaded')chain=['H','1'];
+ else chain=(F==='P'||F==='SS'||F==='3B')?['3','1']:['2','1'];
+ var self1=(F==='1B'&&chain[0]==='1');
+ b.dest=runnerDestGround(b);
+ var mv={};mv[F]=BALLSP[F];
+ b.role(F,'Fields the ball','field');
+ chain.forEach(function(base){
+  var c=coverFor(base,F);
+  if(c===F)return;
+  b.role(c,'Covers '+BN[base],'cover',base);mv[c]=COV[base];
+ });
+  if(chain.indexOf('1')>=0&&!self1&&F!=='1B')b.role('RF','Backs up first base','backup','1'),mv.RF=BK['1'];
+ if(chain.indexOf('1')>=0&&F==='1B')b.role('RF','Backs up first base','backup','1'),mv.RF=BK['1'];
+ if(chain.indexOf('2')>=0)bk2(b,mv,null);
+ if(chain.indexOf('3')>=0)b.role('LF','Backs up third base','backup','3'),mv.LF=BK['3'];
+  if(chain.indexOf('H')>=0||S.run.indexOf(3)>=0){b.role('C','Covers home plate','cover','H');mv.C=COV.H;}
+ fillAll(b,mv,F);
+ var intro='Ball hit to '+PN[F]+'! '+PN[F]+' calls "Mine!" Everyone else moves to their job right away. '+sitHint(sit);
+ b.push(intro,{pos:mv,ball:BALLSP[F],runners:b.partial(0.5),hl:b.hlKeys().concat([F])});
+ var holder=F,hp=BALLSP[F],outs=0,outIds=[];
+ chain.forEach(function(base,i){
+  var c=coverFor(base,F);
+  var rid=runnerAtBase(b,base);
+  var isLast=(i===chain.length-1);
+  var txt,patch={};
+  if(c===holder){
+   txt=PN[c]+' steps on '+BN[base]+(sit==='none'||sit==='r3'?' for the out!':' for the force out!');
+   patch={pos:(function(){var o={};o[c]=COV[base];return o;})(),ball:COV[base],hl:[c]};
+  }else{
+   var m={};m[c]=COV[base];
+   txt=PN[holder]+' throws to the '+lc(PN[c])+' at '+BN[base]+'. '+(base==='1'&&(sit==='none'||sit==='r3')?'Out!':'Force out!');
+   patch={pos:m,ball:COV[base],throwL:[hp,COV[base]],hl:[holder,c]};
+  }
+  outs++;if(rid)outIds.push(rid);
+  if(outs===2)txt+=' Double play!';
+  var rn=b.finalRunners(outIds);
+  if(!isLast){var tmp={};for(var id in rn){if(outIds.indexOf(id)>=0||id==='B')tmp[id]=rn[id];}rn=tmp;}
+  patch.runners=rn;
+  b.push(txt,patch);
+  holder=c;hp=COV[base];
+ });
+ var tip={none:'Easy out at first. The player who fields it throws; everyone else covers or backs up!',
+  r1:'Force play! Get the runner at second first, then the batter at first for two outs if you can.',
+  r12:'Look at the lead force first. Make the sure play. Call out the base: "Third!" "Two!" "One!"',
+  loaded:'Force at home first. The catcher steps on the plate and throws to first. Call out "Home!"',
+  r3:'The runner on third is not forced. Take the sure out at first unless your coach says to throw home.'}[sit];
+ b.push('Remember: '+tip,{runners:{},hl:[]});
+ return b.finish(HITS['g'+F]||('Ground ball to '+PN[F]),tip);
+}
+function outfield(sit,O){
+ var b=new Builder(sit),S=SITS[sit];
+ var target={none:'2',r1:'3',r12:'H',loaded:'H',r3:'H'}[sit];
+ var cutMan=(O==='RF'||O==='RCF')?'2B':'SS',other=(cutMan==='SS')?'2B':'SS';
+ var direct=(target==='2');
+ var mv={};mv[O]=OFSP[O];b.role(O,'Fields the ball','field');
+ var OB={LF:{LCF:[150,150]},LCF:{LF:[180,120],RCF:[300,112]},RCF:{RF:[420,120],LCF:[300,112]},RF:{RCF:[440,150]}}[O];
+ for(var k in OB){b.role(k,'Backs up the outfielder','backup');mv[k]=OB[k];}
+ if(direct){
+  b.role(cutMan,'Covers second base','cover','2');mv[cutMan]=COV['2'];
+  bk2(b,mv,O);
+ }else{
+  b.role(cutMan,'Is the cutoff: stands in line between the outfielder and the base','cutoff');mv[cutMan]=CUT[O];
+  b.role(other,'Covers second base','cover','2');mv[other]=COV['2'];
+ }
+ b.role('3B','Covers third base','cover','3');mv['3B']=COV['3'];
+ b.role('1B','Covers first base','cover','1');mv['1B']=COV['1'];
+ b.role('C','Covers home plate','cover','H');mv.C=COV.H;
+  var d={B:off(BASE['1'],'B')};
+ if(sit==='none')d.B=off(BASE['2'],'B');
+ if(S.run.indexOf(1)>=0)d.R1=(sit==='loaded')?off(BASE['2'],'R1'):off(BASE['3'],'R1');
+ if(S.run.indexOf(2)>=0)d.R2=(sit==='loaded')?off(BASE['3'],'R2'):RB.H;
+ if(S.run.indexOf(3)>=0)d.R3=RB.H;
+ fillAll(b,mv,O);
+ b.dest=d;
+ var tgtTxt={'2':'second base (the batter may try for two)','3':'third base (the runner from first is heading there)','H':'home plate (the lead runner is trying to score)'}[target];
+ b.push('Ball hit to '+PN[O]+'! '+PN[O]+' calls "Mine!" Everyone moves. We throw to the base where the lead runner is going: '+tgtTxt+'.',{pos:mv,ball:OFSP[O],runners:b.partial(0.5),hl:b.hlKeys().concat([O])});
+ var recv=(target==='2')?cutMan:(target==='3'?'3B':'C');
+ if(direct){
+  b.push(PN[O]+' throws straight to the '+lc(PN[cutMan])+' at second base. The center fielders back up the throw.',{ball:COV['2'],throwL:[OFSP[O],COV['2']],runners:b.finalRunners([]),hl:[O,cutMan]});
+ }else{
+  b.push(PN[O]+' throws to the cutoff, the '+lc(PN[cutMan])+'.',{ball:CUT[O],throwL:[OFSP[O],CUT[O]],hl:[O,cutMan]});
+  var rp=(target==='3')?COV['3']:COV.H;
+  b.push('The cutoff turns and throws to the '+lc(PN[recv])+' at '+BN[target]+'.',{ball:rp,throwL:[CUT[O],rp],runners:b.finalRunners([]),hl:[cutMan,recv]});
+ }
+ var tip='Throw to the base where the lead runner is going. The cutoff stands in line, hands up, and listens: "Cut!" or "Let it go!" The other outfielders always back up.';
+ b.push('Remember: '+tip,{hl:[]});
+ return b.finish(HITS['o'+O],tip);
+}
+function bunt(sit,dir){
+ var b=new Builder(sit),S=SITS[sit];
+ var F=(dir==='b3')?'3B':'1B';
+ var BS=(dir==='b3')?[212,462]:[398,462];
+ var target;
+ if(sit==='loaded')target='H';else if(sit==='r12')target=(dir==='b3')?'3':'2';else target='1';
+ var rcv=(target==='1')?'2B':(target==='3'?'SS':(target==='2'?'SS':'C'));
+ var mv={};mv[F]=BS;b.role(F,'Fields the bunt','field');
+ b.role('2B','Covers first base','cover','1');mv['2B']=COV['1'];
+ if(dir==='b3'){
+  b.role('1B','Charges the bunt toward home plate','charge');mv['1B']=[388,440];
+  if(sit==='r1'){b.role('SS','Covers second base','cover','2');mv.SS=COV['2'];}
+  else{b.role('SS','Covers third base','cover','3');mv.SS=COV['3'];}
+ }else{
+  b.role('SS','Covers second base','cover','2');mv.SS=COV['2'];
+  b.role('3B','Covers third base','cover','3');mv['3B']=COV['3'];
+ }
+ if(target==='H'){b.role('C','Covers home plate','cover','H');mv.C=COV.H;}
+ else{b.role('C','Comes out and calls where to throw','call');mv.C=[282,488];}
+ b.role('RF','Backs up first base','backup','1');mv.RF=BK['1'];
+ b.role('LF','Backs up third base','backup','3');mv.LF=BK['3'];
+ bk2(b,mv,null);
+ var d={B:off(BASE['1'],'B')};
+ if(S.run.indexOf(1)>=0)d.R1=off(BASE['2'],'R1');
+ if(S.run.indexOf(2)>=0)d.R2=off(BASE['3'],'R2');
+ if(S.run.indexOf(3)>=0)d.R3=RB.H;
+ fillAll(b,mv,F);
+ b.dest=d;
+ b.push('Bunt down the '+(dir==='b3'?'3rd':'1st')+'-base line! '+PN[F]+' calls "Mine!" The catcher calls the throw. '+sitHint(sit),{pos:mv,ball:BS,runners:b.partial(0.5),hl:b.hlKeys().concat([F])});
+ var outId={'1':'B','2':'R1','3':'R2',H:'R3'}[target];
+ var outs=(d[outId]&&(sit!=='r3'||target!=='H'))?[outId]:[];
+ var txt=PN[F]+' throws to the '+lc(PN[rcv])+' at '+BN[target]+(sit==='none'||sit==='r1'||sit==='r3'?'. Take the sure out at first!':'. Get the lead runner!');
+ b.push(txt,{ball:COV[target],throwL:[BS,COV[target]],runners:b.finalRunners(outs),hl:[F,rcv]});
+ var tip='On a bunt, everybody moves at once. The catcher is the voice: listen for "First!", "Second!" or "Home!"';
+ b.push('Remember: '+tip,{hl:[]});
+ return b.finish(HITS[dir],tip);
+}
+function steal(){
+ var b=new Builder('r1');
+ b.dest={R1:off(BASE['2'],'R1')};
+ var mv={};
+ b.role('C','Catches the pitch, steps up and throws to second','call');mv.C=COV.H;
+ b.role('SS','Covers second base','cover','2');mv.SS=COV['2'];
+ bk2(b,mv,null);
+ b.role('3B','Covers third base','cover','3');mv['3B']=COV['3'];
+ fillAll(b,mv,'C');
+ b.push('The pitch is thrown and the runner breaks for second! Catcher catches the pitch. Shortstop covers second. The center fielders back up. The pitcher stays in the circle. Everyone else moves to a base or a backup spot.',{pos:mv,ball:HS.C,runners:b.partial(0.6),hl:['C','SS','LCF','RCF']});
+ b.push('Catcher throws to the shortstop at second base, who puts the tag down in front of the bag.',{ball:COV['2'],throwL:[HS.C,COV['2']],runners:b.finalRunners([]),hl:['C','SS']});
+ var tip='Pitcher: get out of the way of the throw. Second base needs a cover AND a backup.';
+ b.push('Remember: '+tip,{hl:[]});
+ return b.finish(HITS.st,tip);
+}
+function passedBall(sit){
+ var b=new Builder(sit),S=SITS[sit];
+ var d={};
+ if(S.run.indexOf(3)>=0)d.R3=RB.H;
+ if(S.run.indexOf(2)>=0)d.R2=off(BASE['3'],'R2');
+ if(S.run.indexOf(1)>=0)d.R1=off(BASE['2'],'R1');
+ b.dest=d;
+ var mv={};
+ b.role('C','Chases the ball to the backstop','chase');mv.C=[336,596];
+ fillAll(b,mv,'C');
+ b.push('Passed ball! The catcher chases it. The pitcher stays in the circle.',{pos:mv,ball:[336,598],runners:b.partial(0.6),hl:['C','P']});
+ b.push('The catcher throws the ball to the pitcher in the circle. When the pitcher has the ball in the circle, the play is over and runners must stop.',{ball:HS.P,throwL:[[336,598],HS.P],runners:b.finalRunners([]),hl:['C','P']});
+ var tip='On a passed ball, the catcher gets the ball to the pitcher in the circle. Then the play is over.';
+ b.push('Remember: '+tip,{hl:[]});
+ return b.finish(HITS.pb,tip);
+}
+function buildPlay(sit,hit){
+ if(hit==='b3'||hit==='b1')return bunt(sit,hit);
+ if(hit==='st')return steal();
+ if(hit==='pb')return passedBall(sit);
+ if(hit.charAt(0)==='g')return ground(sit,hit.slice(1));
+ return outfield(sit,hit.slice(1));
+}
+function startStates(sit){
+ var b=new Builder(sit);
+ var keys=KEYS.slice();
+ b.push('Before the pitch: everyone is at her home spot. '+sitHint(sit)+' Ask yourself: where is the play?',{hl:[]});
+ return b.states[0];
+}
+
+/* ===== POSITION CARDS ===== */
+var POS={
+P:{home:'In the pitching circle.',you:'Field balls hit to you and throw to the right base. Call "Mine!" first. Stay in the circle.',not:[['Any play where the ball is not hit to you','Stay in the circle. Watch the play and be ready to catch the ball.'],['Passed ball','Stay in the circle. The catcher throws you the ball.'],['Steal','Stay in the circle. Let the throw go by.'],['Bunt','Stay in the circle. Let the infielders field it.']],backs:'No one. You stay in the circle.',covers:'No base',call:'"Mine!" and "Ball!"',tip:'When you have the ball in the circle, the play is over and runners must stop.'},
+C:{home:'Behind home plate.',you:'If a bunt stops in front of the plate, call "Mine!", field it, and throw to the sure out.',not:[['Ground ball to an infielder','Move up in front of home plate. Cover it and be ready for a throw.'],['Bunt','Come out and call where to throw: "First!" "Second!"'],['Force play at home or runner on 3rd','Cover home plate and stay on it.'],['Hit to the outfield','Cover home plate and take the throw.'],['Steal','Catch the pitch and throw to the covering base.'],['Passed ball','Chase the ball and throw it to the pitcher in the circle.']],backs:'No one. You stay by the plate.',covers:'Home plate',call:'"First!" "Second!" "Third!" "Home!"',tip:'You face the whole field. You are the voice of the defense.'},
+'1B':{home:'A few steps in front of first base.',you:'Step on first for the out. If a runner is on first, throw to second first, then run back to first.',not:[['Ground ball to another infielder','Run to first base and give a big target.'],['Hit to the outfield','Cover first base.'],['Bunt down the 3rd-base line','Charge toward home plate, ready to help.'],['Bunt down the 1st-base line','Field it and throw to the 2nd baseman covering first.'],['Steal or passed ball','Stay near first base.']],backs:'No one. The right fielder backs YOU up.',covers:'First base',call:'"Mine!" and "Bag!"',tip:'Find the bag with your foot and stretch toward the throw.'},
+'2B':{home:'Between first and second, on the first-base side.',you:'Throw to first, or to the shortstop covering second if there is a force.',not:[['Hit to left or left center, runner on base','Cover second base. The shortstop is the cutoff.'],['Hit to right center or right field','Be the cutoff. With no runners, catch the throw at second.'],['Bunt','Cover first base.'],['Runner on 1st, grounder to shortstop or third base','Cover second base.']],backs:'First base on some throws',covers:'Second base or first base (bunts)',call:'"Mine!" "Cut!" "Got it!"',tip:'Hands up and stay in line as the cutoff.'},
+SS:{home:'Between second and third, on the third-base side.',you:'Throw to first, or to the 2nd baseman covering second if there is a force.',not:[['Runner on 1st, grounder to P, 1B or 2B','Cover second base.'],['Grounder to third base','Back up the third baseman. Stay behind her.'],['Hit to left or left center','Be the cutoff. With no runners, catch the throw at second.'],['Hit to right center or right field','Cover second base.'],['Bunt down the 3rd-base line','Cover third base. With a runner on first, cover second.'],['Bunt down the 1st-base line','Cover second base.'],['Steal','Cover second and take the throw.']],backs:'Second base and third base',covers:'Second or third base',call:'"Mine!" "Cut!" "Two!"',tip:'You have the most ground to cover. Read the play before the pitch.'},
+'3B':{home:'Near third base, a few steps in front of the bag.',you:'Throw to first, or step on third if there is a force. Charge bunts.',not:[['Ground ball to any other fielder','Go to third base and cover the bag.'],['Runners on 1st and 2nd, grounder to pitcher or shortstop','Cover third for the force.'],['Hit to the outfield','Cover third base.'],['Bunt down the 1st-base line','Cover third base.'],['Steal','Cover third base.'],['Passed ball','Stay at third base.']],backs:'No one. The left fielder backs YOU up.',covers:'Third base',call:'"Mine!" "Home!" "Back!"',tip:'Stay low and keep your glove down. The ball comes fast.'},
+LF:{home:'Left side of the outfield grass.',you:'Call "Mine!", catch it, and throw to the cutoff.',not:[['Ground ball or bunt to the infield','Run in and back up third base.'],['Hit to left center field','Back up the left center fielder.'],['Throw going to third base','Back up third base.'],['Bunt','Back up third base.'],['Hit to the right side','Move toward the middle, ready to help.']],backs:'Left center field and third base',covers:'No base',call:'"Mine!" "Cut!"',tip:'Run on every pitch. The ball finds the outfield fast.'},
+LCF:{home:'Left-center, deep behind the shortstop.',you:'Call "Mine!" You and the right center fielder have priority over the corner outfielders. Throw to the cutoff.',not:[['Ground ball to the infield','Run in and back up second base.'],['Hit to left field','Back up the left fielder. Stay behind her.'],['Hit to right center field','Back up the right center fielder.'],['Throw going to second base','Back up second base.'],['Bunt or steal','Back up second base.']],backs:'Left field, right center field and second base',covers:'No base',call:'"Mine!" "I got it!"',tip:'Balls in the gap: the player with the best angle calls it loud and early.'},
+RCF:{home:'Right-center, deep behind the 2nd baseman.',you:'Call "Mine!" You and the left center fielder have priority over the corner outfielders. Throw to the cutoff.',not:[['Ground ball to the infield','Run in and back up second base.'],['Hit to right field','Back up the right fielder. Stay behind her.'],['Hit to left center field','Back up the left center fielder.'],['Throw going to second base','Back up second base.'],['Bunt or steal','Back up second base.']],backs:'Right field, left center field and second base',covers:'No base',call:'"Mine!" "I got it!"',tip:'Balls in the gap: the player with the best angle calls it loud and early.'},
+RF:{home:'Right side of the outfield grass.',you:'Call "Mine!", catch it, and throw to the cutoff.',not:[['Ground ball to the infield','Run in and back up first base. Be behind it!'],['Any throw to first base','Back up first base. Be behind it!'],['Hit to right center field','Back up the right center fielder.'],['Bunt','Back up first base.'],['Hit to the left side','Move toward the middle.']],backs:'First base and right center field',covers:'No base',call:'"Mine!" "Cut!"',tip:'Most throws go to first. Be there!'}
+};
+
+/* ===== SVG FIELD ===== */
+var NS='http://www.w3.org/2000/svg',fieldCount=0;
+function mk(tag,attrs,parent){var e=document.createElementNS(NS,tag);for(var k in attrs)e.setAttribute(k,attrs[k]);if(parent)parent.appendChild(e);return e;}
+function pt(p){return 'translate('+p[0]+'px,'+p[1]+'px)';}
+function createField(svg,opts){
+ opts=opts||{};var id=++fieldCount;
+ var defs=mk('defs',{},svg);
+ var mkr=mk('marker',{id:'ah'+id,viewBox:'0 0 10 10',refX:'8',refY:'5',markerWidth:'7',markerHeight:'7',orient:'auto'},defs);
+ mk('path',{d:'M0,0 L10,5 L0,10 z',fill:'#fff'},mkr);
+ mk('rect',{x:0,y:0,width:600,height:640,fill:'#2f7d3a'},svg);
+ // outfield stripes
+ mk('path',{d:'M300,520 L3,223 A420,420 0 0 1 597,223 Z',fill:'#3a8f46'},svg);
+  mk('path',{d:'M3,223 A420,420 0 0 1 597,223',fill:'none',stroke:'#f5d742','stroke-width':6},svg);
+ mk('line',{x1:300,y1:520,x2:3,y2:223,stroke:'#fff','stroke-width':3},svg);
+ mk('line',{x1:300,y1:520,x2:597,y2:223,stroke:'#fff','stroke-width':3},svg);
+ mk('circle',{cx:300,cy:410,r:175,fill:'#c98f5a'},svg);
+ mk('polygon',{points:'300,520 430,392 300,262 170,392',fill:'#3a8f46'},svg);
+ mk('circle',{cx:300,cy:518,r:46,fill:'#c98f5a'},svg);
+ mk('circle',{cx:300,cy:418,r:20,fill:'#b97d49'},svg);
+ mk('polygon',{points:'300,520 430,392 300,262 170,392',fill:'none',stroke:'#fff','stroke-width':2.5},svg);
+ ['1','2','3'].forEach(function(k){var p=BASE[k];mk('rect',{x:p[0]-9,y:p[1]-9,width:18,height:18,fill:'#fff',stroke:'#334',transform:'rotate(45 '+p[0]+' '+p[1]+')'},svg);});
+ mk('polygon',{points:'300,508 311,516 311,526 289,526 289,516',fill:'#fff',stroke:'#334'},svg);
+ mk('path',{d:'M250,614 Q300,590 350,614',fill:'none',stroke:'#e8edf2','stroke-width':4,'stroke-linecap':'round'},svg);
+ [['1st',466,418],['2nd',300,250],['3rd',134,418],['Home',300,556]].forEach(function(t){});
+ var tl=mk('line',{class:'tline',x1:0,y1:0,x2:0,y2:0,'marker-end':'url(#ah'+id+')',visibility:'hidden'},svg);
+ var runG=mk('g',{},svg),plG=mk('g',{},svg),ball;
+ var runs={};
+ ['B','R1','R2','R3'].forEach(function(r){
+  var g=mk('g',{class:'run',visibility:'hidden'},runG);g.style.transform=pt(BATTER);
+  mk('polygon',{points:'0,-13 13,0 0,13 -13,0'},g);
+  var t=mk('text',{x:0,y:1},g);t.textContent=r==='B'?'B':r.slice(1);
+  runs[r]=g;
+ });
+ var pls={};
+ KEYS.forEach(function(k){
+  var g=mk('g',{class:'pl '+GROUP[k]+(opts.click?' click':''),'data-k':k},plG);
+  g.style.transform=pt(HS[k]);
+  mk('circle',{r:19,cx:0,cy:0},g);
+  var t=mk('text',{x:0,y:0},g);t.textContent=k;
+  var ti=mk('title',{},g);ti.textContent=FULL[k]+' ('+NUM[k]+')';
+  if(opts.click){g.setAttribute('tabindex','0');g.setAttribute('role','button');g.setAttribute('aria-label',FULL[k]);
+   g.addEventListener('click',function(){opts.click(k);});
+   g.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();opts.click(k);}});}
+  pls[k]=g;
+ });
+ ball=mk('g',{class:'ball'},svg);ball.style.transform=pt(HS.P);
+ mk('circle',{r:7,cx:0,cy:0},ball);
+ mk('path',{d:'M-5,-3 Q0,0 -5,3 M5,-3 Q0,0 5,3',fill:'none',stroke:'#c0392b','stroke-width':1.2},ball);
+ var api={pls:pls,
+  setState:function(st,noTrans){
+   if(noTrans)svg.style.setProperty('--dur','0.01s');
+   KEYS.forEach(function(k){pls[k].style.transform=pt(st.pos[k]);pls[k].classList.toggle('hl',st.hl.indexOf(k)>=0);});
+   ball.style.transform=pt(st.ball);
+   ['B','R1','R2','R3'].forEach(function(r){var g=runs[r];if(st.runners[r]){g.setAttribute('visibility','visible');g.style.transform=pt(st.runners[r].p);g.classList.toggle('out',!!st.runners[r].out);}else g.setAttribute('visibility','hidden');});
+   if(st.throwL){tl.setAttribute('x1',st.throwL[0][0]);tl.setAttribute('y1',st.throwL[0][1]);tl.setAttribute('x2',st.throwL[1][0]);tl.setAttribute('y2',st.throwL[1][1]);tl.setAttribute('visibility','visible');}
+   else tl.setAttribute('visibility','hidden');
+  },
+  select:function(k){KEYS.forEach(function(x){pls[x].classList.toggle('sel',x===k);});}
+ };
+ return api;
+}
+
+/* ===== APP ===== */
+var TABS=[['field','Field'],['pos','Positions'],['quiz','Quiz'],['cheat','Cheat Sheet']];
+var RULES=['Move on every pitch. Never stand still. (The pitcher stays in the circle.)','Before the pitch ask: where is the play?','Call "Mine!" loud. Teammates answer "Yours!"','Infielders cover bases. Outfielders back up.','If somebody throws, somebody is behind the target.','When the pitcher has the ball in the circle, the play is over and runners must stop.','Lead runner first when there is a force. Otherwise take the sure out.','With 2 outs, take the sure out at first. With fewer outs, think double play or the lead runner.'];
+var state={sit:'none',hit:'gSS',play:null,idx:0,timer:null,slow:false};
+var F1,F2,quizState={right:0,total:0,q:null};
+function $(id){return document.getElementById(id);}
+
+function showTab(name){
+ TABS.forEach(function(t){$('tab-'+t[0]).classList.toggle('on',t[0]===name);var b=document.querySelector('[data-tab="'+t[0]+'"]');b.setAttribute('aria-selected',t[0]===name?'true':'false');});
+ if(name!=='field')stopPlay();
+}
+function buildNav(){
+ var nav=$('nav');
+ TABS.forEach(function(t){var b=document.createElement('button');b.type='button';b.textContent=t[1];b.setAttribute('role','tab');b.setAttribute('data-tab',t[0]);b.setAttribute('aria-selected',t[0]==='field'?'true':'false');b.addEventListener('click',function(){showTab(t[0]);});nav.appendChild(b);});
+}
+function buildSit(){
+ var c=$('sitChips');c.innerHTML='';
+ Object.keys(SITS).forEach(function(k){var b=document.createElement('button');b.type='button';b.className='chip';b.textContent=SITS[k].label;b.setAttribute('aria-pressed',k===state.sit?'true':'false');b.addEventListener('click',function(){state.sit=k;buildSit();buildHits();loadPlay();});c.appendChild(b);});
+}
+function buildHits(){
+ var s=$('hitSel');s.innerHTML='';var v=validHits(state.sit);
+ if(v.indexOf(state.hit)<0)state.hit=v[3];
+ v.forEach(function(h){var o=document.createElement('option');o.value=h;o.textContent=HITS[h];if(h===state.hit)o.selected=true;s.appendChild(o);});
+}
+function loadPlay(){
+ stopPlay();
+ state.play=buildPlay(state.sit,state.hit);
+ state.idx=-1;
+ $('playTitle').textContent=HITS[state.hit]+' ('+SITS[state.sit].label.toLowerCase()+')';
+ var ol=$('steps');ol.innerHTML='';
+ var li0=document.createElement('li');li0.textContent='Before the pitch: everyone is at her home spot. '+sitHint(state.sit)+' Ask yourself: where is the play?';ol.appendChild(li0);
+ state.play.states.forEach(function(s){var li=document.createElement('li');li.textContent=s.text;ol.appendChild(li);});
+ goTo(-1,true);
+}
+function goTo(i,noTrans){
+ var n=state.play.states.length;
+ if(i<-1)i=-1;if(i>n-1)i=n-1;state.idx=i;
+ var st=(i<0)?startStates(state.sit):state.play.states[i];
+ if(i<0){st=startStates(state.sit);}
+ F1.setState(st,noTrans);
+ if(!noTrans)$('fieldSvg').style.setProperty('--dur',state.slow?'1.8s':'0.9s');
+ else setTimeout(function(){$('fieldSvg').style.setProperty('--dur',state.slow?'1.8s':'0.9s');},40);
+ var lis=$('steps').children;
+ for(var j=0;j<lis.length;j++){lis[j].className=(j===i+1)?'cur':(j<i+1?'done':'');}
+ $('bBack').disabled=(i<0);
+ $('bStep').disabled=(i>=n-1);
+ if(lis[i+1]&&lis[i+1].scrollIntoView&&!noTrans){}
+}
+function stopPlay(){if(state.timer){clearTimeout(state.timer);state.timer=null;}$('bPlay').innerHTML='&#9654; Play';}
+function playAuto(){
+ if(state.timer){stopPlay();return;}
+ $('bPlay').innerHTML='&#10074;&#10074; Pause';
+ if(state.idx>=state.play.states.length-1)goTo(-1,true);
+ function tick(){
+  var n=state.play.states.length;
+  if(state.idx>=n-1){stopPlay();return;}
+  goTo(state.idx+1);
+  state.timer=setTimeout(tick,(state.slow?1800:900)+(state.slow?1800:1300));
+ }
+ state.timer=setTimeout(tick,state.idx<0?500:100);
+}
+function buildPosTab(){
+ var l=$('posList');
+ KEYS.forEach(function(k){var b=document.createElement('button');b.type='button';b.className='chip';b.setAttribute('data-k',k);b.textContent=NUM[k]+' '+k;b.title=FULL[k];b.addEventListener('click',function(){showCard(k);});l.appendChild(b);});
+ showCard('SS');
+}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');}
+function showCard(k){
+ var p=POS[k];F2.select(k);
+ var chips=document.querySelectorAll('#posList .chip');for(var i=0;i<chips.length;i++)chips[i].setAttribute('aria-pressed',chips[i].getAttribute('data-k')===k?'true':'false');
+ var h='<h2>'+NUM[k]+' &middot; '+esc(FULL[k])+'</h2><dl class="pc">';
+ h+='<dt>Home spot</dt><dd>'+esc(p.home)+'</dd>';
+ h+='<dt>When the ball is hit to you</dt><dd>'+esc(p.you)+'</dd>';
+ h+='<dt>When it is NOT hit to you</dt><dd><ul>'+p.not.map(function(n){return '<li><b>'+esc(n[0])+':</b> '+esc(n[1])+'</li>';}).join('')+'</ul></dd>';
+ h+='<dt>Who you back up</dt><dd>'+esc(p.backs)+'</dd>';
+ h+='<dt>Base you cover</dt><dd>'+esc(p.covers)+'</dd>';
+ h+='<dt>What you shout</dt><dd>'+esc(p.call)+'</dd></dl>';
+ h+='<div class="remember"><b>Remember:</b> '+esc(p.tip)+'</div>';
+ $('posCard').innerHTML=h;
+}
+function buildCheat(){
+ var t=$('csTable');
+ var h='<thead><tr><th>#</th><th>Position</th><th>Home spot</th><th>Ball hit to you</th><th>Ball NOT hit to you</th><th>Backs up</th><th>Covers</th><th>Call</th></tr></thead><tbody>';
+ KEYS.forEach(function(k){var p=POS[k];
+  h+='<tr><td>'+NUM[k]+'</td><td><b>'+esc(FULL[k])+'</b></td><td>'+esc(p.home)+'</td><td>'+esc(p.you)+'</td><td><ul>'+p.not.map(function(n){return '<li><b>'+esc(n[0])+':</b> '+esc(n[1])+'</li>';}).join('')+'</ul></td><td>'+esc(p.backs)+'</td><td>'+esc(p.covers)+'</td><td>'+esc(p.call)+'</td></tr>';});
+ t.innerHTML=h+'</tbody>';
+ var r='';RULES.forEach(function(x){r+='<li>'+esc(x)+'</li>';});
+ $('rulesCheat').innerHTML=r;$('rulesQuiz').innerHTML=r;
+}
+
+/* ===== QUIZ ===== */
+var POOL=null;
+function buildPool(){
+ POOL={};
+ Object.keys(SITS).forEach(function(s){validHits(s).forEach(function(h){var pl=buildPlay(s,h);KEYS.forEach(function(k){var r=pl.roles[k];if(r.kind!=='stay'&&r.kind!=='field'){(POOL[r.kind]=POOL[r.kind]||{})[r.text]=1;}});});});
+}
+function pick(a){return a[Math.floor(Math.random()*a.length)];}
+function shuffle(a){for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}return a;}
+function nextQ(){
+ if(!POOL)buildPool();
+ var q=null,guard=0;
+ while(!q&&guard++<200){
+  var s=pick(Object.keys(SITS)),h=pick(validHits(s)),pl=buildPlay(s,h);
+  var cand=KEYS.filter(function(k){var r=pl.roles[k];return r.kind!=='stay'&&r.kind!=='field';});
+  if(!cand.length)continue;
+  var k=pick(cand),r=pl.roles[k];
+  var kinds=(r.kind==='cover'||r.kind==='backup')?['cover','backup']:[r.kind];
+  var pool=[];kinds.forEach(function(kd){if(POOL[kd])Object.keys(POOL[kd]).forEach(function(t){if(t!==r.text&&pool.indexOf(t)<0)pool.push(t);});});
+  if(pool.length<3){Object.keys(POOL).forEach(function(kd){Object.keys(POOL[kd]).forEach(function(t){if(t!==r.text&&pool.indexOf(t)<0)pool.push(t);});});}
+  var wrong=shuffle(pool).slice(0,3);
+  var opts=shuffle(wrong.concat([r.text]));
+  q={sit:s,hit:h,pos:k,role:r,opts:opts,play:pl};
+ }
+ quizState.q=q;
+ var sitTxt=s2(q.sit);
+ $('qText').textContent=HITS[q.hit]+'. '+sitTxt+' What does the '+PN[q.pos]+' do?';
+ var o=$('qOpts');o.innerHTML='';
+ q.opts.forEach(function(t){var b=document.createElement('button');b.type='button';b.className='opt';b.textContent=t;b.addEventListener('click',function(){answer(b,t);});o.appendChild(b);});
+ $('qFb').hidden=true;$('qShow').hidden=true;$('qNext').hidden=true;
+}
+function s2(s){return SITS[s].label+'.';}
+function answer(btn,t){
+ var q=quizState.q,ok=(t===q.role.text);
+ quizState.total++;if(ok)quizState.right++;
+ $('score').textContent='Correct: '+quizState.right+' of '+quizState.total;
+ var bs=$('qOpts').children;for(var i=0;i<bs.length;i++){bs[i].disabled=true;if(bs[i].textContent===q.role.text)bs[i].classList.add('right');else if(bs[i]===btn)bs[i].classList.add('wrong');}
+ var fb=$('qFb');fb.hidden=false;
+ fb.innerHTML=(ok?'<b>Yes! Nice job.</b> ':'<b>Good try. Here is the answer:</b> ')+esc(PN[q.pos])+': '+esc(q.role.text)+'. '+esc(WHY[q.role.kind]||'');
+ $('qShow').hidden=false;$('qNext').hidden=false;
+}
+function showQuizOnField(){
+ var q=quizState.q;state.sit=q.sit;state.hit=q.hit;buildSit();buildHits();loadPlay();showTab('field');goTo(0);
+ window.scrollTo(0,0);
+}
+
+function init(){
+ buildNav();buildSit();buildHits();buildCheat();
+ F1=createField($('fieldSvg'));
+ F2=createField($('posSvg'),{click:showCard});
+ buildPosTab();
+ $('hitSel').addEventListener('change',function(e){state.hit=e.target.value;loadPlay();});
+ $('bBack').addEventListener('click',function(){stopPlay();goTo(state.idx-1);});
+ $('bStep').addEventListener('click',function(){stopPlay();goTo(state.idx+1);});
+ $('bReplay').addEventListener('click',function(){stopPlay();goTo(-1,true);setTimeout(playAuto,120);});
+ $('bPlay').addEventListener('click',playAuto);
+ $('bSlow').addEventListener('click',function(){state.slow=!state.slow;this.setAttribute('aria-pressed',state.slow?'true':'false');this.textContent='Slow: '+(state.slow?'on':'off');$('fieldSvg').style.setProperty('--dur',state.slow?'1.8s':'0.9s');});
+ $('qNext').addEventListener('click',nextQ);
+ $('qShow').addEventListener('click',showQuizOnField);
+ $('bPrint').addEventListener('click',function(){window.print();});
+ loadPlay();nextQ();
+}
+if(typeof window!=='undefined'&&typeof document!=='undefined'){init();}
+</script>
+</body>
+</html>
