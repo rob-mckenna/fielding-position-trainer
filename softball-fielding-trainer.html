@@ -467,11 +467,17 @@ function passedBall(sit){
  return b.finish(HITS.pb,tip);
 }
 function buildPlay(sit,hit){
- if(hit==='b3'||hit==='b1')return bunt(sit,hit);
- if(hit==='st')return steal();
- if(hit==='pb')return passedBall(sit);
- if(hit.charAt(0)==='g')return ground(sit,hit.slice(1));
- return outfield(sit,hit.slice(1));
+ var play;
+ if(hit==='b3'||hit==='b1')play=bunt(sit,hit);
+ else if(hit==='st')play=steal();
+ else if(hit==='pb')play=passedBall(sit);
+ else if(hit.charAt(0)==='g')play=ground(sit,hit.slice(1));
+ else play=outfield(sit,hit.slice(1));
+ var pitch=startStates(sit);
+ pitch.ball=BASE.H;
+ pitch.text='Pitch travels from the pitcher to home plate. Runners hold their bases until the ball is hit.';
+ play.states.unshift(pitch);
+ return play;
 }
 function startStates(sit){
  var b=new Builder(sit);
